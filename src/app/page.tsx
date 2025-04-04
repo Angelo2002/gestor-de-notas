@@ -1,103 +1,88 @@
-import Image from "next/image";
+"use client";
+
+import { useNotes } from "@/context/NotesContext";
+import { useNoteActions } from "@/hooks/useNoteActions";
+import { useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { state } = useNotes();
+  const { addNote, deleteNote, editNote } = useNoteActions();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const [selectedCategory, setSelectedCategory] = useState("Todas");
+
+  const filteredNotes =
+    selectedCategory === "Todas"
+      ? state.notes
+      : state.notes.filter((note) => note.category === selectedCategory);
+
+  const handleAddNote = () => {
+    const category = prompt(
+      "¿Categoría de la nota? (Ej: Trabajo, Personal, Estudio)",
+    );
+    if (category) addNote(category);
+  };
+
+  const uniqueCategories = [
+    "Todas",
+    ...new Set(state.notes.map((note) => note.category)),
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-8">
+      <h1 className="text-4xl font-bold mb-6 text-gray-800">
+        📝 Pizarra de Notas{" "}
+      </h1>
+
+      <div className="flex gap-4 mb-6">
+        <button
+          onClick={handleAddNote}
+          className="bg-green-500 text-white px-6 py-2 rounded-md shadow hover:bg-green-600 transition"
+        >
+          ➕ Nueva Nota
+        </button>
+
+        <select
+          className="p-2 rounded-md border bg-gray-200 text-gray-800"
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+        >
+          {uniqueCategories.map((cat, index) => (
+            <option key={`${cat}-${index}`} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex flex-wrap justify-center gap-6 w-full">
+        {filteredNotes.map((note) => (
+          <div
+            key={note.id}
+            className={`relative p-4 w-48 h-52 ${note.color} text-gray-800 font-semibold rounded-md shadow-lg transform rotate-1 hover:rotate-0 transition-all`}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            <button
+              className="absolute top-2 right-2 text-red-500 font-bold"
+              onClick={() => deleteNote(note.id)}
+            >
+              ✖
+            </button>
+
+            <p className="text-xs italic text-gray-700">{note.category}</p>
+
+            <input
+              className="bg-transparent text-lg font-bold w-full outline-none"
+              value={note.title}
+              onChange={(e) => editNote(note.id, "title", e.target.value)}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+            <textarea
+              className="bg-transparent text-sm w-full h-28 outline-none resize-none"
+              value={note.content}
+              onChange={(e) => editNote(note.id, "content", e.target.value)}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
